@@ -30,17 +30,32 @@ dtk:/service-module/scaledaction:sentiment_analysis>cd
 dtk:/>cd service
 dtk:/service>cd sentiment_analysis-cluster
 dtk:/service/sentiment_analysis-cluster>set-required-attributes
- 
+
 Please fill in missing data.
+Please enter akka-seed/scaledaction_common::akka/tweet_subject [STRING]:
+: <TWEET_SUBJECT>
+Please enter akka-seed/scaledaction_common::akka/twitter_consumer_key [STRING]:
+: <TWITTER_CONSUMER_KEY>
+Please enter akka-seed/scaledaction_common::akka/twitter_consumer_secret [STRING]:
+: <TWITTER_CONSUMER_SECRET>
+Please enter akka-seed/scaledaction_common::akka/twitter_token_key [STRING]:
+: <TWITTER_TOKEN_KEY>
+Please enter akka-seed/scaledaction_common::akka/twitter_token_secret [STRING]:
+: <TWITTER_TOKEN_SECRET>
 Please enter akka-seed/setup::credentials_aggregator/aws_access_key [STRING]:
 : <AWS_ACCESS_KEY>
 Please enter akka-seed/setup::credentials_aggregator/aws_secret_key [STRING]:
 : <AWS_SECRET_KEY>
 --------------------------------- DATA ---------------------------------
+akka-seed/scaledaction_common::akka/tweet_subject : <TWEET_SUBJECT>
+akka-seed/scaledaction_common::akka/twitter_consumer_key : <TWITTER_CONSUMER_KEY>
+akka-seed/scaledaction_common::akka/twitter_consumer_secret : <TWITTER_CONSUMER_SECRET>
+akka-seed/scaledaction_common::akka/twitter_token_key : <TWITTER_TOKEN_KEY>
+akka-seed/scaledaction_common::akka/twitter_token_secret : <TWITTER_TOKEN_SECRET>
 akka-seed/setup::credentials_aggregator/aws_access_key : <AWS_ACCESS_KEY>
 akka-seed/setup::credentials_aggregator/aws_secret_key : <AWS_SECRET_KEY>
 ------------------------------------------------------------------------
- 
+
 Is provided information ok? (yes|no) yes
 dtk:/service/sentiment_analysis-cluster>
 ```
