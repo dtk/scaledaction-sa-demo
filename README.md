@@ -4,16 +4,16 @@ This document is guide for deploying Scaledaction sentiment-analysis cluster via
 
 <img src="scaledaction.png" width="1000">
  
-Service module used is: scaledaction:sentiment_analysis
-Assembly template is: cluster
+- Service module used is: **scaledaction:sentiment_analysis**
+- Assembly template is: **cluster**
 
 Assembly template has following nodes:
-- akka-seed - Node where ingest-frontend akka jar is running and pickup stream from Twitter. This node has connection to Kafka broker to be able to write output to tweets topic
-- kafka-broker - Node where Kafka is installed, kafka broker is running and tweets topic is created
-- spark-master - Spark master node where ingest-backend jar is running, picking up messages from Kafka broker, doing processing and writing output to tweets table in Cassandra
-- spark-workers - Two additional nodes that act as Spark workers inside spark cluster. Number of these nodes is scalable if needed
-- cassandra-seed - Cassandra seed node
-- cassandra-peer - Two additional nodes that act as Cassandra peer nodes inside cassandra cluster. Number of these nodes is scalable if needed
+- **akka-seed** - Node where ingest-frontend akka jar is running and pickup stream from Twitter. This node has connection to Kafka broker to be able to write output to tweets topic
+- **kafka-broker** - Node where Kafka is installed, kafka broker is running and tweets topic is created
+- **spark-master** - Spark master node where ingest-backend jar is running, picking up messages from Kafka broker, doing processing and writing output to tweets table in Cassandra
+- **spark-workers** - Two additional nodes that act as Spark workers inside spark cluster. Number of these nodes is scalable if needed
+- **cassandra-seed** - Cassandra seed node
+- **cassandra-peer** - Two additional nodes that act as Cassandra peer nodes inside cassandra cluster. Number of these nodes is scalable if needed
 
 ## DTK Deployment demo:
 Following part of the guide shows procedure of deploying Scaledaction sentiment-analysis cluster. First step is to stage scaledaction:sentiment_analysis/cluster and set needed attributes:
@@ -60,14 +60,14 @@ Is provided information ok? (yes|no) yes
 dtk:/service/sentiment_analysis-cluster>
 ```
 
-Now that we have all attributes set, we can start with deployment process. Deployment process is divide in separate actions. We have following actions:
-- initial_setup - Initial setup of aws credentials and cli on all nodes where interaction with AWS S3 service will be needed. You can take a look at diagram above to see which nodes are connected to AWS S3
-- create_kafka_cluster - Action which deploys kafka broker and creates topic: tweets
-- create_cassandra_cluster - Action which deploys cassandra cluster and creates keyspace: twitter and table: tweets
-- create_akka_cluster - Action which pulls ingest-frontend.jar from AWS S3
-- create_spark_cluster - Action which deploys spark cluster and pulls ingest-backend.jar from AWS S3 on spark master node
-- run_ingest_frontend - This action exports needed environment variables on akka-seed node and runs ingest-frontend jar as background service (with nohup)
-- run_ingest_backend - This action exports needed environment variables on spark-master node and runs ingest-backend jar as background service (with nohup)
+Now that we have all attributes set, we can start with deployment process. Deployment process is divided in separate actions. We have following actions:
+- **initial_setup** - Initial setup of aws credentials and cli on all nodes where interaction with AWS S3 service will be needed. You can take a look at diagram above to see which nodes are connected to AWS S3
+- **create_kafka_cluster** - Action which deploys kafka broker and creates topic: tweets
+- **create_cassandra_cluster** - Action which deploys cassandra cluster and creates keyspace: twitter and table: tweets
+- **create_akka_cluster** - Action which pulls ingest-frontend.jar from AWS S3
+- **create_spark_cluster** - Action which deploys spark cluster and pulls ingest-backend.jar from AWS S3 on spark master node
+- **run_ingest_frontend** - This action exports needed environment variables on akka-seed node and runs ingest-frontend jar as background service (with nohup)
+- **run_ingest_backend** - This action exports needed environment variables on spark-master node and runs ingest-backend jar as background service (with nohup)
 
 We will execute these actions in following order:
 
