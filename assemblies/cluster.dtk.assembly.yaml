@@ -1,0 +1,251 @@
+---
+name: cluster
+description: sentiment analysis cluster
+dsl_version: 1.0.0
+node_bindings:
+  cassandra-seed: amazon-small
+  cassandra-peers: amazon-small
+  kafka-broker: amazon-small
+  spark-master: amazon-small
+  spark-workers: amazon-small
+  akka-seed: amazon-small
+assembly:
+  components:
+  - bigtop_multiservice
+  - cassandra::cluster
+  - zookeeper
+  - hadoop::cluster:
+      attributes:
+        version: 2.6
+      component_links:
+        bigtop_multiservice: bigtop_multiservice
+  - spark::cluster:
+      attributes:
+        version: 1.5.1
+        install_mode: tar
+      component_links:
+        bigtop_multiservice: bigtop_multiservice
+  nodes:
+    kafka-broker:
+      components:
+      - bigtop_multiservice::hiera:
+          component_links:
+            bigtop_multiservice: bigtop_multiservice
+      - bigtop_base:
+          attributes:
+            with_maven: false
+      - zookeeper::server:
+          component_links:
+            zookeeper: zookeeper
+      - kafka::broker:
+          attributes:
+            config:
+              broker_id: 1
+              zookeeper_connect: localhost:2181
+            install_java: false
+      - kafka::topic[tweets]:
+          attributes:
+            number_of_partitions: 1
+            replication_factor: 1
+            zookeeper_connect: localhost:2181
+
+    cassandra-seed:
+      components:
+      - cassandra::java
+      - cassandra::seed:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+      - cassandra:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+      - scaledaction_common::cassandra:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+    cassandra-peers:
+      attributes:
+        cardinality: 2
+        type: group
+      components:
+      - cassandra::java
+      - cassandra:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+
+    akka-seed:
+      components:
+      - setup::credentials_aggregator
+      - setup:
+          component_links:
+            setup::credentials_aggregator: akka-seed/setup::credentials_aggregator
+      - s3::get_bucket_data[sentiment-ingest-frontend-assembly-1.0.jar]:
+          attributes:
+            bucket: scaledactiontest
+            local_file_path: /tmp
+            region: us-east-1
+      - bigtop_multiservice::hiera:
+          component_links:
+            bigtop_multiservice: bigtop_multiservice
+      - bigtop_base:
+          attributes:
+            with_maven: false
+      - scaledaction_common::akka:
+          component_links:
+            kafka::topic: kafka-broker/kafka::topic[tweets]
+            s3::get_bucket_data: akka-seed/s3::get_bucket_data[sentiment-ingest-frontend-assembly-1.0.jar]
+
+    spark-master:
+      components:
+      - setup:
+          component_links:
+            setup::credentials_aggregator: akka-seed/setup::credentials_aggregator
+      - s3::get_bucket_data[sentiment-ingest-backend-assembly-1.0.jar]:
+          attributes:
+            bucket: scaledactiontest
+            local_file_path: /tmp
+            region: us-east-1
+      - s3::get_bucket_data[positive.gz]:
+          attributes:
+            bucket: scaledactiontest
+            local_file_path: /tweet-corpus
+            region: us-east-1
+      - s3::get_bucket_data[negative.gz]:
+          attributes:
+            bucket: scaledactiontest
+            local_file_path: /tweet-corpus
+            region: us-east-1
+      - s3::get_bucket_data[spark-streaming-kafka_2.10-1.5.1.jar]:
+          attributes:
+            bucket: scaledactiontest
+            local_file_path: /tmp
+            region: us-east-1
+      - bigtop_multiservice::hiera:
+          component_links:
+            bigtop_multiservice: bigtop_multiservice
+      - bigtop_base:
+          attributes:
+            with_maven: false
+      - spark::master:
+          attributes:
+            eventlog_enabled: true
+            history_server_enabled: false
+      - spark::client
+      - scaledaction_common::spark:
+          attributes:
+            spark_streaming_kafka_jar_path: /tmp/spark-streaming-kafka_2.10-1.5.1.jar
+          component_links:
+            cassandra::cluster: cassandra::cluster
+            kafka::topic: kafka-broker/kafka::topic[tweets]
+            s3::get_bucket_data: spark-master/s3::get_bucket_data[sentiment-ingest-backend-assembly-1.0.jar]
+    spark-workers:
+      attributes:
+        cardinality: 2
+        type: group
+      components:
+      - bigtop_multiservice::hiera:
+          component_links:
+            bigtop_multiservice: bigtop_multiservice
+      - bigtop_base:
+          attributes:
+            with_maven: false
+      - spark::common:
+          component_links:
+            spark::master: spark-master/spark::master
+      - spark::worker
+
+
+workflows:
+  initial_setup:
+    subtasks:
+    - name: bigtop_multiservice
+      components:
+      - bigtop_multiservice
+    - name: bigtop hiera
+      components:
+      - bigtop_multiservice::hiera
+    - name: bigtop_base
+      components:
+      - bigtop_base
+    - name: aws setup
+      components:
+      - setup::credentials_aggregator
+
+  create_kafka_cluster:
+    subtasks:
+    - name: set zookeeper conf
+      ordered_components:
+      - zookeeper
+      - zookeeper::server
+    - name: kafka broker conf
+      ordered_components:
+      - kafka::broker
+      - kafka::topic[tweets]
+
+  create_cassandra_cluster:
+    subtasks:
+    - name: host aggregator
+      ordered_components:
+      - cassandra::cluster
+    - name: cassandra seed setup
+      node: cassandra-seed
+      ordered_components:
+      - cassandra::java
+      - cassandra::seed
+    - name: install cassandra and scaledaction cassandra setup
+      node: cassandra-seed
+      ordered_components:
+      - cassandra
+      - scaledaction_common::cassandra
+    - name: cassandra peers setup
+      node_group: cassandra-peers
+      ordered_components:
+      - cassandra::java
+    - name: install cassandra
+      node_group: cassandra-peers
+      ordered_components:
+      - cassandra
+    - name: scaledaction cassandra create keyspace and table
+      node: cassandra-seed
+      actions:
+      - scaledaction_common::cassandra.cassandra_wait_for_service
+      - scaledaction_common::cassandra.create_table
+
+  create_akka_cluster:
+    subtasks:
+    - name: get scaledaction frontend app from S3
+      ordered_components:
+      - setup
+      - s3::get_bucket_data[sentiment-ingest-frontend-assembly-1.0.jar]
+      - scaledaction_common::akka
+
+  create_spark_cluster:
+    subtasks:
+    - name: get scaledaction backend app from S3
+      ordered_components:
+      - spark::cluster
+      - hadoop::cluster
+      - setup
+      - scaledaction_common::spark
+      - s3::get_bucket_data[sentiment-ingest-backend-assembly-1.0.jar]
+      - s3::get_bucket_data[positive.gz]
+      - s3::get_bucket_data[negative.gz]
+      - s3::get_bucket_data[spark-streaming-kafka_2.10-1.5.1.jar]
+    - name: spark master and client
+      components:
+      - spark::master
+      - spark::client
+    - name: spark worker
+      components:
+      - spark::common
+      - spark::worker
+
+  run_ingest_frontend:
+    subtasks:
+    - name: execute ingest frontend
+      actions:
+      - scaledaction_common::akka.run_scaledaction_frontend
+
+  run_ingest_backend:
+    subtasks:
+    - name: execute ingest backend
+      actions:
+      - scaledaction_common::spark.run_scaledaction_backend

@@ -1,0 +1,80 @@
+---
+name: singlenode
+description: sentiment analysis single node
+dsl_version: 1.0.0
+node_bindings:
+  scaledaction-node: amazon-medium
+assembly:
+  components:
+  - bigtop_multiservice
+  - cassandra::cluster
+  - zookeeper
+  nodes:
+    scaledaction-node:
+      components:
+      - bigtop_multiservice::hiera:
+          component_links:
+            bigtop_multiservice: bigtop_multiservice
+      - bigtop_base:
+          attributes:
+            with_maven: false
+      - zookeeper::server:
+          component_links:
+            zookeeper: zookeeper
+      - kafka::broker:
+          attributes:
+            config:
+              broker_id: 1
+              zookeeper_connect: localhost:2181
+            install_java: false
+      - kafka::topic[tweets]:
+          attributes:
+            number_of_partitions: 1
+            replication_factor: 1
+            zookeeper_connect: localhost:2181
+      - cassandra::java
+      - cassandra::seed:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+      - cassandra:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+      - scaledaction_common::cassandra:
+          component_links:
+            cassandra::cluster: cassandra::cluster
+workflows:
+  create_kafka_cluster:
+    subtasks:
+    - name: bigtop_multiservice
+      components:
+      - bigtop_multiservice
+    - name: bigtop hiera
+      components:
+      - bigtop_multiservice::hiera
+    - name: bigtop_base
+      components:
+      - bigtop_base
+    - name: set zookeeper conf
+      ordered_components:
+      - zookeeper
+      - zookeeper::server
+    - name: kafka broker conf
+      ordered_components:
+      - kafka::broker
+      - kafka::topic[tweets]
+
+  create_cassandra_cluster:
+    subtasks:
+    - name: host aggregator
+      ordered_components:
+      - cassandra::cluster
+    - name: cassandra seed setup
+      ordered_components:
+      - cassandra::java
+      - cassandra::seed
+      - cassandra
+      - scaledaction_common::cassandra
+    - name: scaledaction cassandra create keyspace and table
+      actions:
+      - scaledaction_common::cassandra.cassandra_wait_for_service
+      - scaledaction_common::cassandra.create_table

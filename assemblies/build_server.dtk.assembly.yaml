@@ -1,0 +1,26 @@
+---
+name: build_server
+description: For building scaledaction app 
+dsl_version: 1.0.0
+node_bindings:
+  build-server: amazon-small
+assembly:
+  nodes:
+    build-server:
+      components:
+      - setup::credentials_aggregator
+      - setup:
+          component_links:
+            setup::credentials_aggregator: build-server/setup::credentials_aggregator
+      - bigtop_toolchain::sbt
+      - repo_manager::build[scaledaction]
+workflows:
+  create:
+    subtask_order: sequential
+    subtasks:
+    - name: scaledaction-build
+      ordered_components:
+      - setup::credentials_aggregator
+      - setup
+      - bigtop_toolchain::sbt
+      - repo_manager::build[scaledaction]

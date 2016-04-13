@@ -1,0 +1,32 @@
+---
+component_modules:
+  apt:
+    namespace: puppetlabs
+  bigtop_base:
+    namespace: bigtop
+  bigtop_multiservice:
+    namespace: bigtop
+  bigtop_toolchain:
+    namespace: bigtop
+  cassandra:
+    namespace: database
+  hadoop:
+    namespace: bigtop-new
+  kafka:
+    namespace: messagebroker
+  maven:
+    namespace: maestrodev
+  repo_manager:
+    namespace: scaledaction
+  s3:
+    namespace: aws
+  scaledaction_common:
+    namespace: scaledaction
+  setup:
+    namespace: aws
+  spark:
+    namespace: bigtop-new
+  stdlib:
+    namespace: puppetlabs
+  zookeeper:
+    namespace: bigtop3
