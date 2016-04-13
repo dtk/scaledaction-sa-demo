@@ -2,7 +2,7 @@
 
 This document is guide for deploying Scaledaction sentiment-analysis cluster via DTK. Following is the diagram of Scaledaction cluster:
 
-<img src="scaledactioncluster.png" width="550">
+<img src="scaledaction.png" width="550">
  
 Service module used is: scaledaction:sentiment_analysis
 Assembly template is: cluster
