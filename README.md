@@ -2,19 +2,20 @@
 
 This document is guide for deploying Scaledaction sentiment-analysis cluster via DTK. Following is the diagram of Scaledaction cluster:
 
-<image>
+<img src="scaledactioncluster.png" width="550">
  
 Service module used is: scaledaction:sentiment_analysis
 Assembly template is: cluster
 
 Assembly template has following nodes:
-akka-seed - Node where ingest-frontend akka jar is running and pickup stream from Twitter. This node has connection to Kafka broker to be able to write output to tweets topic
-kafka-broker - Node where Kafka is installed, kafka broker is running and tweets topic is created
-spark-master - Spark master node where ingest-backend jar is running, picking up messages from Kafka broker, doing processing and writing output to tweets table in Cassandra
-spark-workers - Two additional nodes that act as Spark workers inside spark cluster. Number of these nodes is scalable if needed
-cassandra-seed - Cassandra seed node
-cassandra-peer - Two additional nodes that act as Cassandra peer nodes inside cassandra cluster. Number of these nodes is scalable if needed
-DTK Deployment demo:
+- akka-seed - Node where ingest-frontend akka jar is running and pickup stream from Twitter. This node has connection to Kafka broker to be able to write output to tweets topic
+- kafka-broker - Node where Kafka is installed, kafka broker is running and tweets topic is created
+- spark-master - Spark master node where ingest-backend jar is running, picking up messages from Kafka broker, doing processing and writing output to tweets table in Cassandra
+- spark-workers - Two additional nodes that act as Spark workers inside spark cluster. Number of these nodes is scalable if needed
+- cassandra-seed - Cassandra seed node
+- cassandra-peer - Two additional nodes that act as Cassandra peer nodes inside cassandra cluster. Number of these nodes is scalable if needed
+
+## DTK Deployment demo:
 Following part of the guide shows procedure of deploying Scaledaction sentiment-analysis cluster. First step is to stage scaledaction:sentiment_analysis/cluster and set needed attributes:
 
 ```
@@ -340,5 +341,5 @@ cqlsh:twitter> select * from tweets;
 (6 rows)
 ```
 
-# Conclusion
+## Conclusion
 As you can see, end-to-end process for Scaledaction sentiment analysis was deployed successfully as we see tweets with query "Apple" get processed through sentiment analysis pipeline and get eventually written in Cassandra tweets table
