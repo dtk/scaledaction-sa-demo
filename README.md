@@ -51,6 +51,9 @@ dtk:/>
 Next step is to stage scaledaction:sentiment_analysis/cluster and set needed attributes:
 
 ```
+dtk:/>cd service-module
+dtk:/service-module>cd scaledaction:sentiment_analysis
+dtk:/service-module/scaledaction:sentiment_analysis>
 dtk:/service-module/scaledaction:sentiment_analysis>stage cluster scaledaction_cluster -v master
 ---
 new_service_instance:
