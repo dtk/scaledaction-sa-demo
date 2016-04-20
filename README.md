@@ -16,7 +16,39 @@ Assembly template has following nodes:
 - **cassandra-peer** - Two additional nodes that act as Cassandra peer nodes inside cassandra cluster. Number of these nodes is scalable if needed
 
 ## DTK Deployment demo:
-Following part of the guide shows procedure of deploying Scaledaction sentiment-analysis cluster. First step is to stage scaledaction:sentiment_analysis/cluster and set needed attributes:
+Following part of the guide shows procedure of deploying Scaledaction sentiment-analysis cluster.
+You need to first login to the scaledaction ec2 instance and run dtk-client:
+```
+$ ssh -i testing_use1.pem ubuntu@scaledaction.dtk.io
+Welcome to Ubuntu 14.04.3 LTS (GNU/Linux 3.13.0-74-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Wed Apr 20 07:21:32 UTC 2016
+
+  System load:  0.0               Processes:              128
+  Usage of /:   44.9% of 7.74GB   Users logged in:        0
+  Memory usage: 25%               IP address for eth0:    10.0.0.198
+  Swap usage:   0%                IP address for docker0: 172.17.0.1
+
+  Graph this data and manage this system at:
+    https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+71 packages can be updated.
+38 updates are security updates.
+
+
+*** System restart required ***
+Last login: Wed Apr 20 07:21:34 2016 from 80.65.166.98
+ubuntu@ip-10-0-0-198:~$ sudo su - dtk-scaledaction
+dtk-scaledaction@ip-10-0-0-198:~$ dtk-shell
+dtk:/>
+```
+
+Next step is to stage scaledaction:sentiment_analysis/cluster and set needed attributes:
 
 ```
 dtk:/service-module/scaledaction:sentiment_analysis>stage cluster scaledaction_cluster -v master
